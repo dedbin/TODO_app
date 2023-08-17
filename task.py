@@ -9,6 +9,7 @@ class Task:
     def mark_as_completed(self):
         self.completed = True
 
+
 class TaskRepository:
     def __init__(self):
         self.tasks = []

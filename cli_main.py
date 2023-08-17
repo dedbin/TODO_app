@@ -1,11 +1,15 @@
 import cmd
 from task import TaskRepository
+from pyfiglet import Figlet
+
+custom_fig = Figlet(font='slant')
+
 
 class TodoApp(cmd.Cmd):
     def __init__(self):
         super().__init__()
         self.prompt = ">>> "
-        self.intro = "Добро пожаловать в приложение для отслеживания задач!"
+        self.intro = f"Добро пожаловать в приложение для отслеживания задач! \n {custom_fig.renderText('TODO app')}"
 
         self.task_repository = TaskRepository()
 
@@ -29,14 +33,14 @@ class TodoApp(cmd.Cmd):
         Пример: get_task 1
         """
         try:
-          task_id = int(task_id)
-          task = self.task_repository.get_task(task_id)
-          if task:
-              print(task.__dict__)
-          else:
-              print("Нет такой задачи!")
+            task_id = int(task_id)
+            task = self.task_repository.get_task(task_id)
+            if task:
+                print(task.__dict__)
+            else:
+                print("Нет такой задачи!")
         except:
-              print("Нет такой задачи!")
+            print("Нет такой задачи!")
 
     def do_get_all_tasks(self, arg):
         """
@@ -54,14 +58,14 @@ class TodoApp(cmd.Cmd):
         Пример: mark_task_as_completed 1
         """
         try:
-          task_id = int(task_id)
-          success = self.task_repository.update_task(task_id, completed=True)
-          if success:
-              print("Задача отмечена как выполненная!")
-          else:
-              print("Задача не найдена!")
+            task_id = int(task_id)
+            success = self.task_repository.update_task(task_id, completed=True)
+            if success:
+                print("Задача отмечена как выполненная!")
+            else:
+                print("Задача не найдена!")
         except:
-              print("Нет такой задачи!")
+            print("Нет такой задачи!")
 
     def do_get_incomplete_tasks(self, arg):
         """
@@ -87,17 +91,20 @@ class TodoApp(cmd.Cmd):
         Формат: update_task task_id key1=value1 key2=value2 ...
         Пример: update_task 1 title=Новый заголовок description=Новое описание
         """
-        args = arg.split(",")
-        task_id = int(args[0].strip())
-        updates = {}
-        for pair in args[1:]:
-            key, value = pair.split("=")
-            updates[key.strip()] = value.strip()
-        success = self.task_repository.update_task(task_id, **updates)
-        if success:
-            print("Задача обновлена успешно!")
-        else:
-            print("Задача не найдена!")
+        try:
+            args = arg.split(",")
+            task_id = int(args[0].strip())
+            updates = {}
+            for pair in args[1:]:
+                key, value = pair.split("=")
+                updates[key.strip()] = value.strip()
+            success = self.task_repository.update_task(task_id, **updates)
+            if success:
+                print("Задача обновлена успешно!")
+            else:
+                print("Задача не найдена!")
+        except:
+            print("Нет такой задачи!")
 
     def do_delete_task(self, task_id):
         """
@@ -106,14 +113,14 @@ class TodoApp(cmd.Cmd):
         Пример: delete_task 1
         """
         try:
-          task_id = int(task_id)
-          success = self.task_repository.delete_task(task_id)
-          if success:
-              print("Задача удалена успешно!")
-          else:
-              print("Задача не найдена!")
+            task_id = int(task_id)
+            success = self.task_repository.delete_task(task_id)
+            if success:
+                print("Задача удалена успешно!")
+            else:
+                print("Задача не найдена!")
         except:
-              print("Нет такой задачи!")
+            print("Нет такой задачи!")
 
     def do_exit(self, arg):
         """
