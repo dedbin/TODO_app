@@ -6,10 +6,26 @@ class Task:
         self.deadline = deadline
         self.completed = completed
 
+    def mark_as_completed(self):
+        self.completed = True
 
 class TaskRepository:
     def __init__(self):
         self.tasks = []
+
+    def get_incomplete_tasks(self):
+        incomplete_tasks = []
+        for task in self.tasks:
+            if not task.completed:
+                incomplete_tasks.append(task)
+        return incomplete_tasks
+
+    def get_completed_tasks(self):
+        completed_tasks = []
+        for task in self.tasks:
+            if task.completed:
+                completed_tasks.append(task)
+        return completed_tasks
 
     def create_task(self, title, description, deadline):
         task_id = len(self.tasks) + 1  # Генерируем уникальный идентификатор задачи

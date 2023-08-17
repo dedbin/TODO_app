@@ -28,12 +28,15 @@ class TodoApp(cmd.Cmd):
         Формат: get_task task_id
         Пример: get_task 1
         """
-        task_id = int(task_id)
-        task = self.task_repository.get_task(task_id)
-        if task:
-            print(task.__dict__)
-        else:
-            print("Задача не найдена!")
+        try:
+          task_id = int(task_id)
+          task = self.task_repository.get_task(task_id)
+          if task:
+              print(task.__dict__)
+          else:
+              print("Нет такой задачи!")
+        except:
+              print("Нет такой задачи!")
 
     def do_get_all_tasks(self, arg):
         """
@@ -43,6 +46,40 @@ class TodoApp(cmd.Cmd):
         tasks = self.task_repository.get_all_tasks()
         for task in tasks:
             print(task.__dict__)
+
+    def do_mark_task_as_completed(self, task_id):
+        """
+        Отметить задачу как выполненную.
+        Формат: mark_task_as_completed task_id
+        Пример: mark_task_as_completed 1
+        """
+        try:
+          task_id = int(task_id)
+          success = self.task_repository.update_task(task_id, completed=True)
+          if success:
+              print("Задача отмечена как выполненная!")
+          else:
+              print("Задача не найдена!")
+        except:
+              print("Нет такой задачи!")
+
+    def do_get_incomplete_tasks(self, arg):
+        """
+        Вывести список невыполненных задач.
+        Формат: get_incomplete_tasks
+        """
+        incomplete_tasks = self.task_repository.get_incomplete_tasks()
+        for task in incomplete_tasks:
+            print(task)
+
+    def do_get_completed_tasks(self, arg):
+        """
+        Вывести список выполненных задач.
+        Формат: get_completed_tasks
+        """
+        completed_tasks = self.task_repository.get_completed_tasks()
+        for task in completed_tasks:
+            print(task)
 
     def do_update_task(self, arg):
         """
@@ -68,12 +105,15 @@ class TodoApp(cmd.Cmd):
         Формат: delete_task task_id
         Пример: delete_task 1
         """
-        task_id = int(task_id)
-        success = self.task_repository.delete_task(task_id)
-        if success:
-            print("Задача удалена успешно!")
-        else:
-            print("Задача не найдена!")
+        try:
+          task_id = int(task_id)
+          success = self.task_repository.delete_task(task_id)
+          if success:
+              print("Задача удалена успешно!")
+          else:
+              print("Задача не найдена!")
+        except:
+              print("Нет такой задачи!")
 
     def do_exit(self, arg):
         """
