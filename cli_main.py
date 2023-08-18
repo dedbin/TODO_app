@@ -2,12 +2,10 @@ import cmd
 from task import TaskRepository
 from pyfiglet import Figlet
 
-custom_fig = Figlet(font='slant')
-
 
 class TodoApp(cmd.Cmd):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.prompt = ">>> "
         self.intro = f"Добро пожаловать в приложение для отслеживания задач! \n {custom_fig.renderText('TODO app')}"
 
@@ -74,7 +72,7 @@ class TodoApp(cmd.Cmd):
         """
         incomplete_tasks = self.task_repository.get_incomplete_tasks()
         for task in incomplete_tasks:
-            print(task)
+            print(task.__dict__)
 
     def do_get_completed_tasks(self, arg):
         """
@@ -83,7 +81,7 @@ class TodoApp(cmd.Cmd):
         """
         completed_tasks = self.task_repository.get_completed_tasks()
         for task in completed_tasks:
-            print(task)
+            print(task.__dict__)
 
     def do_update_task(self, arg):
         """
@@ -93,18 +91,21 @@ class TodoApp(cmd.Cmd):
         """
         try:
             args = arg.split(",")
-            task_id = int(args[0].strip())
+            print(f"{args[0][0] = }")
+            task_id = int(args[0][0])
+            print(f'{task_id = }')
             updates = {}
             for pair in args[1:]:
                 key, value = pair.split("=")
                 updates[key.strip()] = value.strip()
+            print(f'{updates = }')
             success = self.task_repository.update_task(task_id, **updates)
             if success:
                 print("Задача обновлена успешно!")
             else:
-                print("Задача не найдена!")
+                print("Нет такой задачи!")
         except:
-            print("Нет такой задачи!")
+            print("При обновлении задачи произошла ошибка!")
 
     def do_delete_task(self, task_id):
         """
@@ -130,30 +131,9 @@ class TodoApp(cmd.Cmd):
         print("До свидания!")
         return True
 
-    def do_help(self, arg):
-        """
-        Вывести список доступных команд или получить помощь по конкретной команде.
-        Формат: help [command]
-        Пример: help create_task
-        """
-        if arg:
-            # Вывести помощь по конкретной команде
-            try:
-                doc = getattr(self, "do_" + arg).__doc__
-                if doc:
-                    print(doc)
-                else:
-                    print("Нет помощи для этой команды.")
-            except AttributeError:
-                print("Нет такой команды.")
-        else:
-            # Вывести список доступных команд
-            print("Список доступных команд:")
-            command_names = [cmd[3:] for cmd in self.get_names() if cmd.startswith("do_")]
-            for command_name in command_names:
-                print(command_name)
-
 
 if __name__ == "__main__":
+    custom_fig = Figlet(font='slant')
+
     app = TodoApp()
     app.cmdloop()

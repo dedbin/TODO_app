@@ -1,3 +1,6 @@
+import sqlite3
+
+
 class Task:
     def __init__(self, task_id, title, description, deadline, completed=False):
         self.task_id = task_id
@@ -12,47 +15,118 @@ class Task:
 
 class TaskRepository:
     def __init__(self):
-        self.tasks = []
+        self.conn = sqlite3.connect("tasks.db")
+        self.create_table()
+
+    def create_table(self):
+        cursor = self.conn.cursor()
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS tasks (
+                task_id INTEGER PRIMARY KEY,
+                title TEXT NOT NULL,
+                description TEXT,
+                deadline TEXT,
+                completed INTEGER
+            )
+        """)
+
+        self.conn.commit()
 
     def get_incomplete_tasks(self):
-        incomplete_tasks = []
-        for task in self.tasks:
-            if not task.completed:
-                incomplete_tasks.append(task)
-        return incomplete_tasks
+        cursor = self.conn.cursor()
+
+        cursor.execute("""
+            SELECT * FROM tasks WHERE completed = 0
+        """)
+
+        rows = cursor.fetchall()
+        tasks: list = []
+        for row in rows:
+            task_id, title, description, deadline, completed = row
+            tasks.append(Task(task_id, title, description, deadline, bool(completed)))
+
+        return tasks
 
     def get_completed_tasks(self):
-        completed_tasks = []
-        for task in self.tasks:
-            if task.completed:
-                completed_tasks.append(task)
-        return completed_tasks
+        cursor = self.conn.cursor()
+
+        cursor.execute("""
+            SELECT * FROM tasks WHERE completed = 1
+        """)
+
+        rows = cursor.fetchall()
+        tasks = []
+        for row in rows:
+            task_id, title, description, deadline, completed = row
+            tasks.append(Task(task_id, title, description, deadline, bool(completed)))
+
+        return tasks
 
     def create_task(self, title, description, deadline):
-        task_id = len(self.tasks) + 1  # Генерируем уникальный идентификатор задачи
-        task = Task(task_id, title, description, deadline)
-        self.tasks.append(task)
+        cursor = self.conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO tasks (title, description, deadline, completed)
+            VALUES (?, ?, ?, 0)
+        """, (title, description, deadline))
+
+        self.conn.commit()
 
     def get_task(self, task_id):
-        for task in self.tasks:
-            if task.task_id == task_id:
-                return task
+        cursor = self.conn.cursor()
+
+        cursor.execute("""
+            SELECT * FROM tasks WHERE task_id = ?
+        """, (task_id,))
+
+        row = cursor.fetchone()
+        if row:
+            task_id, title, description, deadline, completed = row
+            return Task(task_id, title, description, deadline, bool(completed))
         return None
 
     def get_all_tasks(self):
-        return self.tasks
+        cursor = self.conn.cursor()
+
+        cursor.execute("""
+            SELECT * FROM tasks
+        """)
+
+        rows = cursor.fetchall()
+        tasks = []
+        for row in rows:
+            task_id, title, description, deadline, completed = row
+            tasks.append(Task(task_id, title, description, deadline, bool(completed)))
+
+        return tasks
 
     def update_task(self, task_id, **kwargs):
-        task = self.get_task(task_id)
-        if task:
-            for key in kwargs:
-                setattr(task, key, kwargs[key])
+        cursor = self.conn.cursor()
+
+        values: list = []
+        for key, value in kwargs.items():
+            values.append(f"{key} = :{key}")
+
+        query = f"""
+            UPDATE tasks
+            SET {', '.join(values)}
+            WHERE task_id = :task_id
+        """
+
+        try:
+            cursor.execute(query, {"task_id": task_id, **kwargs})
+            self.conn.commit()
             return True
-        return False
+        except:
+            return False
 
     def delete_task(self, task_id):
-        task = self.get_task(task_id)
-        if task:
-            self.tasks.remove(task)
-            return True
-        return False
+        cursor = self.conn.cursor()
+
+        cursor.execute("""
+            DELETE FROM tasks WHERE task_id = ?
+        """, (task_id,))
+
+        self.conn.commit()
+        return cursor.rowcount > 0
